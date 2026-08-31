@@ -11,8 +11,8 @@ export function HeroSection() {
   return (
     <section className="relative overflow-hidden pt-20 pb-28 md:pt-28 md:pb-36 border-b border-neutral-200/70 dark:border-neutral-800/70">
       {/* Background Ambient Glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[350px] bg-sky-500/15 dark:bg-sky-500/20 blur-[130px] rounded-full pointer-events-none" />
-      <div className="absolute top-1/2 right-10 w-[300px] h-[250px] bg-sky-600/10 blur-[100px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-137.5 h-87.5 bg-sky-500/15 dark:bg-sky-500/20 blur-[130px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/2 right-10 w-75 h-62.5 bg-sky-600/10 blur-[100px] rounded-full pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
         {/* Badge */}
@@ -24,7 +24,7 @@ export function HeroSection() {
         {/* Heading */}
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-neutral-900 dark:text-white max-w-4xl mx-auto leading-tight md:leading-tight">
           The Secure Vault for Your{" "}
-          <span className="bg-gradient-to-r from-sky-500 via-sky-400 to-sky-600 bg-clip-text text-transparent">
+          <span className="bg-linear-to-r from-sky-500 via-sky-400 to-sky-600 bg-clip-text text-transparent">
             Digital Goods
           </span>{" "}
           &amp; Licenses.

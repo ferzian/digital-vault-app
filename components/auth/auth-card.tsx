@@ -35,7 +35,7 @@ export function AuthCard({
       </div>
 
       {/* Background Ambient Glow */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[300px] bg-sky-500/15 dark:bg-sky-500/20 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-112.5 h-75 bg-sky-500/15 dark:bg-sky-500/20 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="w-full max-w-md relative z-10 my-16">
         {/* Brand Header */}

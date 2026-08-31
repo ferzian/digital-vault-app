@@ -23,7 +23,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-sky-700 flex items-center justify-center text-white shadow-md shadow-sky-500/20">
+          <div className="w-8 h-8 rounded-lg bg-linear-to-br from-sky-500 to-sky-700 flex items-center justify-center text-white shadow-md shadow-sky-500/20">
             <HiShieldCheck className="w-5 h-5" />
           </div>
           <span className="font-bold text-sm sm:text-base tracking-tight text-neutral-900 dark:text-white">

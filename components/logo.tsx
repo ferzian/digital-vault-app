@@ -7,7 +7,11 @@ interface LogoProps {
   href?: string;
 }
 
-export function Logo({ showTagline = true, size = "md", href = "/" }: LogoProps) {
+export function Logo({
+  showTagline = true,
+  size = "md",
+  href = "/",
+}: LogoProps) {
   const iconSizes = {
     sm: "w-7 h-7 rounded-lg",
     md: "w-9 h-9 rounded-xl",
@@ -29,7 +33,7 @@ export function Logo({ showTagline = true, size = "md", href = "/" }: LogoProps)
   return (
     <Link href={href} className="flex items-center gap-2.5 group">
       <div
-        className={`${iconSizes[size]} bg-gradient-to-br from-sky-500 to-sky-700 flex items-center justify-center text-white shadow-md shadow-sky-500/20 group-hover:scale-105 transition-transform shrink-0`}
+        className={`${iconSizes[size]} bg-linear-to-br from-sky-500 to-sky-700 flex items-center justify-center text-white shadow-md shadow-sky-500/20 group-hover:scale-105 transition-transform shrink-0`}
       >
         <HiShieldCheck className={shieldSizes[size]} />
       </div>

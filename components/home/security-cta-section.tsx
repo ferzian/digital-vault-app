@@ -4,7 +4,7 @@ import { HiShieldCheck, HiArrowRight } from "react-icons/hi2";
 export function SecurityCtaSection() {
   return (
     <section id="security" className="py-20 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <div className="relative rounded-3xl border border-sky-500/30 bg-gradient-to-b from-sky-500/10 via-neutral-900/5 to-transparent p-10 md:p-14 overflow-hidden">
+      <div className="relative rounded-3xl border border-sky-500/30 bg-linear-to-b from-sky-500/10 via-neutral-900/5 to-transparent p-10 md:p-14 overflow-hidden">
         <div className="w-14 h-14 mx-auto rounded-2xl bg-sky-500/20 text-sky-400 flex items-center justify-center mb-6">
           <HiShieldCheck className="w-8 h-8" />
         </div>
