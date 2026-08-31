@@ -1,10 +1,13 @@
 "use client";
 
-import { signOut, useSession } from "@/lib/auth-client";
+import { useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
+import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+import { UserView } from "@/components/dashboard/user-view";
+import { AdminView } from "@/components/dashboard/admin-view";
 
-const DashboardPage = () => {
+export default function DashboardPage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
 
@@ -14,24 +17,39 @@ const DashboardPage = () => {
     }
   }, [isPending, session, router]);
 
-  if (isPending)
-    return <p className="text-center mt-8 text-white">Loading...</p>;
-  if (!session?.user)
-    return <p className="text-center mt-8 text-white">Redirecting...</p>;
+  if (isPending) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#090D16] text-slate-900 dark:text-slate-100">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-3 border-sky-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 tracking-wide uppercase">
+            Loading Vault Session...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session?.user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#090D16] text-slate-900 dark:text-slate-100">
+        <p className="text-xs font-semibold text-neutral-400">
+          Redirecting to login...
+        </p>
+      </div>
+    );
+  }
 
   const { user } = session;
+  const isAdmin = user.role === "admin";
 
   return (
-    <main className="max-w-md h-screen flex items-center justify-center flex-col mx-auto p-6 space-y-4 text-white">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
-      <p>Welcome, you're {user.role}, {user.name || "User"}!</p>
-      <p>Email: {user.email}</p>
-      <button
-        onClick={() => signOut()}
-        className="w-full bg-white text-black font-medium rounded-md px-4 py-2 hover:bg-gray-200"
-      >Sign Out</button>
-    </main>
-  );
-};
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#090D16] text-slate-900 dark:text-slate-100 transition-colors duration-200">
+      <DashboardHeader user={user} />
 
-export default DashboardPage;
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        {isAdmin ? <AdminView user={user} /> : <UserView user={user} />}
+      </main>
+    </div>
+  );
+}
