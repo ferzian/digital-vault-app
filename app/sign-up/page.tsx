@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { signUp } from "@/lib/auth-client";
 
-const SignupPage = () => {
+const SignUpPage = () => {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
@@ -25,7 +25,7 @@ const SignupPage = () => {
   }
 
   return (
-    <main className="max-w-md mx-auto p-6 space-y-4 text-white">
+    <main className="max-w-md h-screen flex items-center justify-center flex-col mx-auto p-6 space-y-4 text-white">
       <h1 className="text-2xl font-bold">Sign Up</h1>
       {error && <p className="text-red-500">{error}</p>}
 
@@ -62,4 +62,4 @@ const SignupPage = () => {
   );
 };
 
-export default SignupPage;
+export default SignUpPage;
