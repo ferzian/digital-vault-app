@@ -1,31 +1,21 @@
-"use client";
+import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
+import { HeroSection } from "@/components/home/hero-section";
+import { GoodsPreviewSection } from "@/components/home/goods-preview-section";
+import { FeaturesSection } from "@/components/home/features-section";
+import { SecurityCtaSection } from "@/components/home/security-cta-section";
 
-import { router } from "better-auth/api";
-import { useRouter } from "next/navigation";
-import React from "react";
-
-const Home = () => {
-  const router = useRouter();
+export default function Home() {
   return (
-    <main className="flex items-center justify-center h-screen bg-neutral-950 text-white">
-      <div className="flex gap-4">
-        <button
-          onClick={() => router.push("/sign-up")}
-          className="bg-white text-black font-medium px-6 py-2 rounded-md hover:bg-gray-200"
-        >
-          Sign Up
-        </button>
-      </div>
-      <div className="flex gap-4">
-        <button
-          onClick={() => router.push("/sign-in")}
-          className="bg-white text-black font-medium px-6 py-2 rounded-md hover:bg-gray-200"
-        >
-          Sign In
-        </button>
-      </div>
-    </main>
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#090D16] text-slate-900 dark:text-slate-100 transition-colors duration-200">
+      <Navbar />
+      <main className="flex-1 flex flex-col">
+        <HeroSection />
+        <GoodsPreviewSection />
+        <FeaturesSection />
+        <SecurityCtaSection />
+      </main>
+      <Footer />
+    </div>
   );
-};
-
-export default Home;
+}
