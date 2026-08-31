@@ -1,3 +1,5 @@
+"use client";
+
 import { signOut, useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
@@ -27,7 +29,7 @@ const DashboardPage = () => {
       <button
         onClick={() => signOut()}
         className="w-full bg-white text-black font-medium rounded-md px-4 py-2 hover:bg-gray-200"
-      ></button>
+      >Sign Out</button>
     </main>
   );
 };
