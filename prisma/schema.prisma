@@ -1,8 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -13,26 +11,28 @@ datasource db {
 }
 
 model User {
-  id            String    @id
+  id            String        @id @default(cuid())
   name          String
   email         String
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean       @default(false)
   image         String?
-  role          String?   @default("user")
-  banned        Boolean?  @default(false)
+  role          String?       @default("user")
+  banned        Boolean?      @default(false)
   banReason     String?
   banExpires    DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   sessions      Session[]
   accounts      Account[]
+  transactions  Transaction[]
+  vaultItems    VaultItem[]
 
   @@unique([email])
   @@map("user")
 }
 
 model Session {
-  id        String   @id
+  id        String   @id @default(cuid())
   expiresAt DateTime
   token     String
   createdAt DateTime @default(now())
@@ -48,7 +48,7 @@ model Session {
 }
 
 model Account {
-  id                    String    @id
+  id                    String    @id @default(cuid())
   issuer                String
   accountId             String
   providerId            String
@@ -70,7 +70,7 @@ model Account {
 }
 
 model Verification {
-  id         String   @id
+  id         String   @id @default(cuid())
   identifier String
   value      String
   expiresAt  DateTime
@@ -79,4 +79,85 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+model Product {
+  id          String        @id @default(cuid())
+  title       String
+  slug        String        @unique
+  description String        @db.Text
+  category    String        // e.g. "Source Code", "Design System", "Developer Tool", "License Key", "Templates"
+  price       Float
+  currency    String        @default("USD")
+  imageUrl    String?
+  fileUrl     String?       // Download link or mock storage url
+  fileSize    String?       // e.g. "45.2 MB"
+  format      String?       // e.g. "ZIP + GitHub Access", "Figma + React", "License Key + Binary"
+  version     String        @default("v1.0.0")
+  stock       Int           @default(-1) // -1 for unlimited
+  isActive    Boolean       @default(true)
+  badge       String?       // e.g. "Best Seller", "Trending", "New", "Featured"
+  licenseType String        @default("Commercial") // "Personal", "Commercial", "Extended"
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  transactions Transaction[]
+  vaultItems   VaultItem[]
+
+  @@map("product")
+}
+
+model Transaction {
+  id            String     @id @default(cuid())
+  referenceId   String     @unique // e.g. "TXN-2026-XXXX-XXXX"
+  userId        String
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId     String
+  product       Product    @relation(fields: [productId], references: [id], onDelete: Restrict)
+  amount        Float
+  currency      String     @default("USD")
+  status        String     @default("SUCCESS") // "SUCCESS", "PENDING", "FAILED", "REFUNDED"
+  paymentMethod String     @default("VAULT_DIRECT") // "VAULT_DIRECT", "CREDIT_CARD", "CRYPTO"
+  licenseKey    String?    // e.g. "VAULT-XXXX-XXXX-XXXX"
+  notes         String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  vaultItem     VaultItem?
+
+  @@index([userId])
+  @@index([productId])
+  @@map("transaction")
+}
+
+model VaultItem {
+  id              String       @id @default(cuid())
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId       String
+  product         Product      @relation(fields: [productId], references: [id], onDelete: Restrict)
+  transactionId   String?      @unique
+  transaction     Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+  licenseKey      String       @default("") // Generated unique license
+  downloadsCount  Int          @default(0)
+  lastDownloadedAt DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+  @@map("vault_item")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  adminEmail String
+  action     String   // e.g. "PRODUCT_CREATE", "PRODUCT_UPDATE", "PRODUCT_DELETE", "USER_ROLE_UPDATE", "USER_BAN", "TRANSACTION_STATUS_UPDATE"
+  target     String?  // e.g. "Product: Oceanic UI", "User: user@test.com"
+  details    String?  @db.Text
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  @@map("audit_log")
 }
