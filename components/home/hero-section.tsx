@@ -17,7 +17,6 @@ export function HeroSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
         {/* Badge */}
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-sky-500/30 bg-sky-500/10 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 text-xs font-semibold mb-6 shadow-sm">
-          <HiSparkles className="w-4 h-4 text-sky-500 animate-pulse" />
           <span>Digital Assets &amp; Vault Management 2.0</span>
         </div>
 
