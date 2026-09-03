@@ -82,24 +82,24 @@ model Verification {
 }
 
 model Product {
-  id          String        @id @default(cuid())
+  id          String   @id @default(cuid())
   title       String
-  slug        String        @unique
-  description String        @db.Text
-  category    String        // e.g. "Source Code", "Design System", "Developer Tool", "License Key", "Templates"
+  slug        String   @unique
+  description String   @db.Text
+  category    String // e.g. "Source Code", "Design System", "Developer Tool", "License Key", "Templates"
   price       Float
-  currency    String        @default("USD")
+  currency    String   @default("USD")
   imageUrl    String?
-  fileUrl     String?       // Download link or mock storage url
-  fileSize    String?       // e.g. "45.2 MB"
-  format      String?       // e.g. "ZIP + GitHub Access", "Figma + React", "License Key + Binary"
-  version     String        @default("v1.0.0")
-  stock       Int           @default(-1) // -1 for unlimited
-  isActive    Boolean       @default(true)
-  badge       String?       // e.g. "Best Seller", "Trending", "New", "Featured"
-  licenseType String        @default("Commercial") // "Personal", "Commercial", "Extended"
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  fileUrl     String? // Download link or mock storage url
+  fileSize    String? // e.g. "45.2 MB"
+  format      String? // e.g. "ZIP + GitHub Access", "Figma + React", "License Key + Binary"
+  version     String   @default("v1.0.0")
+  stock       Int      @default(-1) // -1 for unlimited
+  isActive    Boolean  @default(true)
+  badge       String? // e.g. "Best Seller", "Trending", "New", "Featured"
+  licenseType String   @default("Commercial") // "Personal", "Commercial", "Extended"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   transactions Transaction[]
   vaultItems   VaultItem[]
@@ -108,22 +108,27 @@ model Product {
 }
 
 model Transaction {
-  id            String     @id @default(cuid())
-  referenceId   String     @unique // e.g. "TXN-2026-XXXX-XXXX"
-  userId        String
-  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  productId     String
-  product       Product    @relation(fields: [productId], references: [id], onDelete: Restrict)
-  amount        Float
-  currency      String     @default("USD")
-  status        String     @default("SUCCESS") // "SUCCESS", "PENDING", "FAILED", "REFUNDED"
-  paymentMethod String     @default("VAULT_DIRECT") // "VAULT_DIRECT", "CREDIT_CARD", "CRYPTO"
-  licenseKey    String?    // e.g. "VAULT-XXXX-XXXX-XXXX"
-  notes         String?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  id                  String   @id @default(cuid())
+  referenceId         String   @unique // e.g. "TXN-2026-XXXX-XXXX"
+  userId              String
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId           String
+  product             Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  amount              Float
+  currency            String   @default("USD")
+  snapToken           String?
+  snapRedirectUrl     String?
+  paymentType         String?
+  midtransStatus      String?
+  rawMidtransResponse String?  @db.Text
+  status              String   @default("SUCCESS")
+  paymentMethod       String   @default("VAULT_DIRECT")
+  licenseKey          String?
+  notes               String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
-  vaultItem     VaultItem?
+  vaultItem VaultItem?
 
   @@index([userId])
   @@index([productId])
@@ -131,18 +136,18 @@ model Transaction {
 }
 
 model VaultItem {
-  id              String       @id @default(cuid())
-  userId          String
-  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  productId       String
-  product         Product      @relation(fields: [productId], references: [id], onDelete: Restrict)
-  transactionId   String?      @unique
-  transaction     Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
-  licenseKey      String       @default("") // Generated unique license
-  downloadsCount  Int          @default(0)
+  id               String       @id @default(cuid())
+  userId           String
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId        String
+  product          Product      @relation(fields: [productId], references: [id], onDelete: Restrict)
+  transactionId    String?      @unique
+  transaction      Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+  licenseKey       String       @default("") // Generated unique license
+  downloadsCount   Int          @default(0)
   lastDownloadedAt DateTime?
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
 
   @@unique([userId, productId])
   @@index([userId])
@@ -153,11 +158,36 @@ model VaultItem {
 model AuditLog {
   id         String   @id @default(cuid())
   adminEmail String
-  action     String   // e.g. "PRODUCT_CREATE", "PRODUCT_UPDATE", "PRODUCT_DELETE", "USER_ROLE_UPDATE", "USER_BAN", "TRANSACTION_STATUS_UPDATE"
-  target     String?  // e.g. "Product: Oceanic UI", "User: user@test.com"
+  action     String // e.g. "PRODUCT_CREATE", "PRODUCT_UPDATE", "PRODUCT_DELETE", "USER_ROLE_UPDATE", "USER_BAN", "TRANSACTION_STATUS_UPDATE"
+  target     String? // e.g. "Product: Oceanic UI", "User: user@test.com"
   details    String?  @db.Text
   ipAddress  String?
   createdAt  DateTime @default(now())
 
   @@map("audit_log")
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  EXPIRED
+  CANCELLED
+  REFUNDED
+}
+
+// 2. Enum status Midtrans resmi (opsional, untuk presisi audit)
+enum MidtransTransactionStatus {
+  authorize
+  capture
+  settlement
+  deny
+  pending
+  cancel
+  refund
+  partial_refund
+  chargeback
+  partial_chargeback
+  expire
+  failure
 }
