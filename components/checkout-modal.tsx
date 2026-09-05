@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import {
@@ -45,6 +45,21 @@ export function CheckoutModal({ product, isOpen, onClose }: CheckoutModalProps) 
     licenseKey: string;
   } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [isMidtransSuccess, setIsMidtransSuccess] = useState(false);
+
+  useEffect(() => {
+    // Inject Midtrans Snap script
+    const scriptUrl = "https://app.sandbox.midtrans.com/snap/snap.js";
+    const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY;
+
+    if (!document.querySelector(`script[src="${scriptUrl}"]`)) {
+      const script = document.createElement("script");
+      script.src = scriptUrl;
+      script.setAttribute("data-client-key", clientKey || "");
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  }, []);
 
   if (!isOpen || !product) return null;
 
@@ -75,16 +90,42 @@ export function CheckoutModal({ product, isOpen, onClose }: CheckoutModalProps) 
         } else {
           setError(data.error || "Failed to process transaction.");
         }
+        setLoading(false);
         return;
       }
 
-      setSuccessData({
-        referenceId: data.transaction.referenceId,
-        licenseKey: data.vaultItem.licenseKey,
-      });
+      if (paymentMethod === "MIDTRANS") {
+        if ((window as any).snap) {
+          (window as any).snap.pay(data.snapToken, {
+            onSuccess: function (result: any) {
+              setIsMidtransSuccess(true);
+              setLoading(false);
+            },
+            onPending: function (result: any) {
+              setError("Payment is pending. Check your email or vault later.");
+              setLoading(false);
+            },
+            onError: function (result: any) {
+              setError("Payment failed. Please try again.");
+              setLoading(false);
+            },
+            onClose: function () {
+              setLoading(false);
+            },
+          });
+        } else {
+          setError("Payment gateway is still loading. Please try again in a moment.");
+          setLoading(false);
+        }
+      } else {
+        setSuccessData({
+          referenceId: data.transaction.referenceId,
+          licenseKey: data.vaultItem.licenseKey,
+        });
+        setLoading(false);
+      }
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred during checkout.");
-    } finally {
       setLoading(false);
     }
   };
@@ -100,6 +141,7 @@ export function CheckoutModal({ product, isOpen, onClose }: CheckoutModalProps) 
   const handleClose = () => {
     setError(null);
     setSuccessData(null);
+    setIsMidtransSuccess(false);
     onClose();
   };
 
@@ -117,7 +159,39 @@ export function CheckoutModal({ product, isOpen, onClose }: CheckoutModalProps) 
           <HiXMark className="w-5 h-5" />
         </button>
 
-        {successData ? (
+        {isMidtransSuccess ? (
+          /* MIDTRANS SUCCESS STATE */
+          <div className="text-center py-4 space-y-5">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-500/15 text-emerald-500 mx-auto flex items-center justify-center border border-emerald-500/30">
+              <HiCheckBadge className="w-10 h-10" />
+            </div>
+
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-widest text-emerald-500">
+                Payment Successful
+              </span>
+              <h3 className="text-xl font-bold text-neutral-900 dark:text-white mt-1">
+                Asset Unlocked in Your Vault!
+              </h3>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 max-w-sm mx-auto">
+                Your payment was successful. We are generating your license key securely.
+              </p>
+            </div>
+
+            <div className="pt-4">
+              <button
+                onClick={() => {
+                  handleClose();
+                  router.push("/dashboard");
+                }}
+                className="w-full py-3.5 px-4 rounded-xl text-xs font-bold bg-sky-500 hover:bg-sky-600 text-white shadow-lg shadow-sky-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span>Go to My Vault</span>
+                <HiArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        ) : successData ? (
           /* SUCCESS STATE */
           <div className="text-center py-4 space-y-5">
             <div className="w-16 h-16 rounded-2xl bg-emerald-500/15 text-emerald-500 mx-auto flex items-center justify-center border border-emerald-500/30">
@@ -237,7 +311,22 @@ export function CheckoutModal({ product, isOpen, onClose }: CheckoutModalProps) 
               <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
                 Settlement Method
               </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("MIDTRANS")}
+                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                    paymentMethod === "MIDTRANS"
+                      ? "border-sky-500 bg-sky-500/10 text-sky-600 dark:text-sky-400 font-bold"
+                      : "border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 text-xs">
+                    <HiShieldCheck className="w-4 h-4" />
+                    <span>Midtrans (IDR)</span>
+                  </div>
+                  <div className="text-[10px] text-neutral-400 mt-1">Pay via Snap gateway</div>
+                </button>
                 <button
                   type="button"
                   onClick={() => setPaymentMethod("VAULT_DIRECT")}
