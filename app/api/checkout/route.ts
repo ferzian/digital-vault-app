@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getUserSession, generateLicenseKey, generateReferenceId } from "@/lib/admin-auth";
-
+import { snap } from "@/lib/midtrans";
 export async function POST(req: NextRequest) {
   try {
     const sessionRes = await getUserSession();
@@ -54,6 +54,62 @@ export async function POST(req: NextRequest) {
 
     // Generate transaction metadata and unique license key
     const referenceId = generateReferenceId();
+
+    if (paymentMethod === "MIDTRANS") {
+      // Assuming product.price is in USD, converting to IDR for Midtrans compatibility (approx rate)
+      const exchangeRate = 15000;
+      const grossAmount = Math.round(product.price * exchangeRate);
+
+      const transaction = await prisma.transaction.create({
+        data: {
+          referenceId,
+          userId,
+          productId,
+          amount: product.price,
+          currency: product.currency,
+          status: "PENDING",
+          paymentMethod,
+          notes: "Pending Midtrans payment",
+        },
+      });
+
+      const parameter = {
+        transaction_details: {
+          order_id: referenceId,
+          gross_amount: grossAmount,
+        },
+        customer_details: {
+          first_name: sessionRes.user.name || "Customer",
+          email: sessionRes.user.email,
+        },
+        item_details: [
+          {
+            id: product.id,
+            price: grossAmount,
+            quantity: 1,
+            name: product.title.substring(0, 50),
+          },
+        ],
+      };
+
+      const snapResponse = await snap.createTransaction(parameter);
+
+      await prisma.transaction.update({
+        where: { id: transaction.id },
+        data: {
+          snapToken: snapResponse.token,
+          snapRedirectUrl: snapResponse.redirect_url,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        snapToken: snapResponse.token,
+        redirectUrl: snapResponse.redirect_url,
+        transaction,
+      });
+    }
+
     const licenseKey = generateLicenseKey("VAULT");
 
     // Execute atomic transaction to record order and grant vault license
